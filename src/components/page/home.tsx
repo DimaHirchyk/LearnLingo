@@ -1,8 +1,25 @@
+import { useNavigate } from "react-router-dom";
 import { ButtonHero } from "../ui/buttonHero";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/redux/store";
+import { useEffect } from "react";
+import { getTeachers } from "@/redux/teacher/operation";
+
+const MyComponent = () => {
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    dispatch(getTeachers());
+  }, [dispatch]);
+
+  return <div>Check console</div>;
+};
 
 export default function Home() {
+  const navigate = useNavigate();
   return (
     <>
+      <MyComponent />
       <div className="grid grid-cols-2 gap-6 mb-6">
         <div className="flex flex-col  py-[98px] px-16 bg-ring rounded-4xl">
           <h1 className="font-medium text-5xl mb-8">
@@ -15,7 +32,13 @@ export default function Home() {
             Elevate your language proficiency to new heights by connecting with
             highly qualified and experienced tutors.
           </p>
-          <ButtonHero className="h-16 ">Get started</ButtonHero>
+          <ButtonHero
+            onClick={() => {
+              navigate("/teachers");
+            }}
+            className="h-16 ">
+            Get started
+          </ButtonHero>
         </div>
         <div>
           <picture>
