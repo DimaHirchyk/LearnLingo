@@ -1,6 +1,6 @@
 import { ButtonHero } from "../ui/buttonHero";
 
-export function Home() {
+export default function Home() {
   return (
     <>
       <div className="grid grid-cols-2 gap-6 mb-6">

@@ -12,7 +12,7 @@ import { ButtonReadMore } from "../ui/buttonReadMore";
 import { BookingModal } from "../booking-modal";
 import { ButtonOpenModal } from "../ui/buttonOpenModal";
 
-export function TeacherCard() {
+export default function TeacherCard() {
   const [showReviews, setShowReviews] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 

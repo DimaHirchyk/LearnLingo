@@ -14,6 +14,7 @@ import { Field, Form, Formik, type FormikHelpers } from "formik";
 import { useDispatch } from "react-redux";
 import { logInUser } from "@/redux/auth/operation";
 import type { AppDispatch } from "@/redux/store";
+// import { useNavigate } from "react-router-dom";
 
 type LoginFormValues = {
   email: string;
@@ -23,6 +24,7 @@ type LoginFormValues = {
 export function LogIn() {
   const dispatch = useDispatch<AppDispatch>();
 
+  // const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -37,6 +39,10 @@ export function LogIn() {
           password: values.password,
         })
       );
+      // .unwrap()
+      // .then(() => {
+      //   navigate("/");
+      // });
 
       action.resetForm();
       setIsLoading(false);

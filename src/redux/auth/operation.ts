@@ -1,6 +1,8 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
   createUserWithEmailAndPassword,
+  getAuth,
+  onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
@@ -92,5 +94,56 @@ export const logOutUser = createAsyncThunk(
       }
       return thunkAPI.rejectWithValue(errorMessage);
     }
+  }
+);
+
+interface RefreshedUser {
+  uid: string;
+  email: string | null;
+  name: string | null;
+  displayName: string | null;
+}
+
+export const refreshUser = createAsyncThunk<
+  RefreshedUser,
+  void,
+  { rejectValue: string }
+>(
+  "auth/refresh",
+  async (_, thunkAPI) => {
+    try {
+      const authInstance = getAuth();
+
+      return await new Promise<RefreshedUser>((resolve, reject) => {
+        const unsubscribe = onAuthStateChanged(authInstance, (user) => {
+          if (user) {
+            unsubscribe();
+            resolve({
+              uid: user.uid,
+              email: user.email,
+              name: user.displayName,
+              displayName: user.displayName,
+            });
+          } else {
+            unsubscribe();
+            reject("Користувач не авторизований.");
+          }
+        });
+      });
+    } catch (err: unknown) {
+      let errorMessage = "Помилка логінізації";
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      return thunkAPI.rejectWithValue(errorMessage);
+    }
+  },
+  {
+    condition: (_, thunkAPI) => {
+      const reduxState = thunkAPI.getState() as {
+        auth: { token: string | null };
+      };
+      return reduxState.auth.token !== null;
+    },
   }
 );
