@@ -18,7 +18,7 @@ export default function TeacherCard() {
 
   useEffect(() => {
     dispatch(getTeachers(page)); // Pass the initial page number
-  }, [dispatch]);
+  }, [dispatch, page]);
 
   const loadMode = () => {
     dispatch(getTeachers(page + 1));
