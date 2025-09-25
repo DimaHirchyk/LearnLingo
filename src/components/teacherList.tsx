@@ -11,18 +11,16 @@ import type { Teachers } from "@/redux/teacher/slice";
 
 interface TeacherListProps {
   teachers: Teachers[];
-  onClick: (value: boolean) => void;
+  onClick: (teacher: Teachers) => void;
 }
 
 export function TeacherList({ teachers, onClick }: TeacherListProps) {
   const [showReviews, setShowReviews] = useState<string | null>(null);
-  // const [openTeacherId, setOpenTeacherId] = useState<string | null>(null);
 
-  //   const initials =
   return (
     <ul className="flex flex-col gap-8">
       {teachers.map((teacher) => (
-        <Card className="p-6 bg-white max-w-[1200px]" key={teacher.avatar_url}>
+        <Card className="p-6 bg-white max-w-[1200px]" key={teacher.id}>
           {" "}
           {/* Avatar and basic info */}
           <div className="relative w-[120px] mr-12">
@@ -126,7 +124,7 @@ export function TeacherList({ teachers, onClick }: TeacherListProps) {
               {showReviews && (
                 <ButtonOpenModal
                   className="bg-chart-4 font-bold text-lg py-4 px-12 mt-12 h-16"
-                  onClick={() => onClick(true)}>
+                  onClick={() => onClick(teacher)}>
                   Book trial lesson
                 </ButtonOpenModal>
               )}

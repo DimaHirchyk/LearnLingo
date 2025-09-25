@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./auth/slice";
 import teacherReducer from "./teacher/slice";
+import filterSlice from "./filtration/slice";
 
 import {
   persistStore,
@@ -27,6 +28,7 @@ export const store = configureStore({
   reducer: {
     teachers: teacherReducer,
     auth: persisteAuthReducer,
+    filters: filterSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -14,11 +14,15 @@ export const getTeachers = createAsyncThunk(
       const response = await axios.get(
         `.json?orderBy="$key"&limitToFirst=${LIMIT}&startAt="${start}"`
       );
-      console.log(response.data);
 
-      const teachersArray = Object.values(response.data || {}).filter(
-        (t): t is Teachers => t !== null
-      );
+      const teachersArray: Teachers[] = Object.entries(response.data || {})
+        .filter(([, value]) => value !== null)
+        .map(([key, value]) => ({
+          ...(value as Teachers),
+          id: key,
+        }));
+
+      console.log(teachersArray);
 
       return { data: teachersArray, page };
     } catch (error: unknown) {

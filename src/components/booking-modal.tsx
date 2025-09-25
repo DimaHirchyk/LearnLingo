@@ -10,17 +10,21 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ButtonSubmit } from "./ui/buttonSubmit";
+import type { Teachers } from "@/redux/teacher/slice";
 
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
+  teacher: Teachers | null;
 }
 
-export function BookingModal({ isOpen, onClose }: BookingModalProps) {
-  const [selectedReason, setSelectedReason] = useState("career");
+export function BookingModal({ isOpen, onClose, teacher }: BookingModalProps) {
+  const [selectedReason, setSelectedReason] = useState<string>("career");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+
+  if (!teacher) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,15 +56,17 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
-              <AvatarImage
-                src="/professional-teacher-woman.png"
-                alt="Jane Smith"
-              />
-              <AvatarFallback>JS</AvatarFallback>
+              <AvatarImage src={teacher.avatar_url} alt={teacher.name} />
+              <AvatarFallback>
+                {teacher.name[0]}
+                {teacher.surname[0]}
+              </AvatarFallback>
             </Avatar>
             <div>
               <p className="text-xs text-muted-foreground">Your teacher</p>
-              <p className="font-medium">Jane Smith</p>
+              <p className="font-medium">
+                {teacher.name} {teacher.surname}
+              </p>
             </div>
           </div>
 

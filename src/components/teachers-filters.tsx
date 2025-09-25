@@ -5,8 +5,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getFilters } from "@/redux/filtration/operation";
+import { selectFilterTeachers } from "@/redux/filtration/selector";
+
+import type { AppDispatch } from "@/redux/store";
+import { filterTeachers } from "@/redux/teacher/slice";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 export function TeachersFilters() {
+  const dispatch = useDispatch<AppDispatch>();
+  const option = useSelector(selectFilterTeachers);
+
+  const [filters, setFilters] = useState({
+    languages: "",
+    levels: "",
+    price_per_hour: null as number | null,
+  });
+
+  useEffect(() => {
+    dispatch(getFilters());
+  }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(filterTeachers(filters));
+  }, [filters, dispatch]);
+
   return (
     <div className="mb-8 p-6  rounded-lg">
       <div className="flex gap-5">
@@ -14,16 +38,20 @@ export function TeachersFilters() {
           <label className=" text-sm font-medium text-card-foreground">
             Languages
           </label>
-          <Select defaultValue="french">
+          <Select
+            value={filters.languages}
+            onValueChange={(value) =>
+              setFilters((prev) => ({ ...prev, languages: value }))
+            }>
             <SelectTrigger>
               <SelectValue placeholder="Оберіть мову" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="french">Французька</SelectItem>
-              <SelectItem value="english">Англійська</SelectItem>
-              <SelectItem value="spanish">Іспанська</SelectItem>
-              <SelectItem value="german">Німецька</SelectItem>
-              <SelectItem value="italian">Італійська</SelectItem>
+              {option.languages.map((lang) => (
+                <SelectItem key={lang} value={lang}>
+                  {lang}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -32,19 +60,20 @@ export function TeachersFilters() {
           <label className=" text-sm font-medium text-card-foreground">
             Level of knowledge
           </label>
-          <Select defaultValue="a1-beginner">
+          <Select
+            value={filters.levels}
+            onValueChange={(value) =>
+              setFilters((prev) => ({ ...prev, levels: value }))
+            }>
             <SelectTrigger>
               <SelectValue placeholder="Оберіть рівень" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="a1-beginner">A1 Початковий</SelectItem>
-              <SelectItem value="a2-elementary">A2 Елементарний</SelectItem>
-              <SelectItem value="b1-intermediate">B1 Середній</SelectItem>
-              <SelectItem value="b2-upper-intermediate">
-                B2 Вище середнього
-              </SelectItem>
-              <SelectItem value="c1-advanced">C1 Просунутий</SelectItem>
-              <SelectItem value="c2-proficiency">C2 Досконалий</SelectItem>
+              {option.levels.map((level) => (
+                <SelectItem key={level} value={level}>
+                  {level}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -53,7 +82,18 @@ export function TeachersFilters() {
           <label className=" text-sm font-medium text-card-foreground">
             Price
           </label>
-          <Select defaultValue="30">
+          <Select
+            value={
+              filters.price_per_hour !== null
+                ? String(filters.price_per_hour)
+                : ""
+            }
+            onValueChange={(value) =>
+              setFilters((prev) => ({
+                ...prev,
+                price_per_hour: value ? Number(value) : null,
+              }))
+            }>
             <SelectTrigger>
               <SelectValue placeholder="Оберіть ціну" />
             </SelectTrigger>
