@@ -62,11 +62,14 @@ const teacherSlice = createSlice({
       state.displayLimit = LIMIT;
 
       state.filteredTeachers = state.teacher.filter((teacher) => {
+        // --- ВИПРАВЛЕНО: Додано перевірку 'teacher.languages' ---
         const languagesMatch = action.payload.languages
-          ? teacher.languages.includes(action.payload.languages)
+          ? teacher.languages &&
+            teacher.languages.includes(action.payload.languages)
           : true;
+        // --- ВИПРАВЛЕНО: Додано перевірку 'teacher.levels' ---
         const levelsMatch = action.payload.levels
-          ? teacher.levels.includes(action.payload.levels)
+          ? teacher.levels && teacher.levels.includes(action.payload.levels)
           : true;
         const priceMatch =
           action.payload.price_per_hour !== null
@@ -103,15 +106,18 @@ const teacherSlice = createSlice({
             (newTeacher) => !existingTeacherIds.has(newTeacher.id)
           );
 
-          state.teacher.push(...uniqueNewTeachers);
+          state.teacher.push(...uniqueNewTeachers); // застосування активних фільтрів
 
-          // застосування активних фільтрів
           const { languages, levels, price_per_hour } = state.currentFilters;
           state.filteredTeachers = state.teacher.filter((teacher) => {
+            // --- ВИПРАВЛЕНО: Додано перевірку 'teacher.languages' ---
             const languagesMatch = languages
-              ? teacher.languages.includes(languages)
+              ? teacher.languages && teacher.languages.includes(languages)
               : true;
-            const levelsMatch = levels ? teacher.levels.includes(levels) : true;
+            // --- ВИПРАВЛЕНО: Додано перевірку 'teacher.levels' ---
+            const levelsMatch = levels
+              ? teacher.levels && teacher.levels.includes(levels)
+              : true;
             const priceMatch =
               price_per_hour != null
                 ? teacher.price_per_hour <= price_per_hour
