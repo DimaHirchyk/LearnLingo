@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { ButtonHero } from "../ui/buttonHero";
-import { AuthModal } from "../auth-modal";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -54,7 +53,6 @@ export default function Home() {
             </p>
           </li>
         </ul>
-        <AuthModal />
       </div>
     </>
   );
