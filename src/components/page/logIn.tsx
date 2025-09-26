@@ -10,16 +10,23 @@ import {
 } from "@/components/ui/card";
 import { Eye, EyeOff } from "lucide-react";
 import { ButtonRegister } from "../ui/buttonRegister";
-import { Field, Form, Formik, type FormikHelpers } from "formik";
+import { ErrorMessage, Field, Form, Formik, type FormikHelpers } from "formik";
 import { useDispatch } from "react-redux";
 import { logInUser } from "@/redux/auth/operation";
 import type { AppDispatch } from "@/redux/store";
-// import { useNavigate } from "react-router-dom";
+import * as Yup from "yup";
 
 type LoginFormValues = {
   email: string;
   password: string;
 };
+
+const ValidationSchema = Yup.object().shape({
+  email: Yup.string().email().required("Enter email"),
+  password: Yup.string()
+    .min(8, "Password is too short - should be 8 chars minimum.")
+    .required("Please provide a valid password"),
+});
 
 export function LogIn() {
   const dispatch = useDispatch<AppDispatch>();
@@ -39,10 +46,6 @@ export function LogIn() {
           password: values.password,
         })
       );
-      // .unwrap()
-      // .then(() => {
-      //   navigate("/");
-      // });
 
       action.resetForm();
       setIsLoading(false);
@@ -65,6 +68,7 @@ export function LogIn() {
         </CardHeader>
         <CardContent className="block">
           <Formik
+            validationSchema={ValidationSchema}
             onSubmit={handleSubmit}
             initialValues={{ email: "", password: "" }}>
             <Form className="space-y-4">
@@ -77,9 +81,11 @@ export function LogIn() {
                     placeholder="Email"
                   />
                 </div>
-                {/* {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email}</p>
-                )} */}
+                <ErrorMessage
+                  name="email"
+                  component="p"
+                  className="text-red-500  mt-3"
+                />
               </div>
 
               <div className="space-y-2">
@@ -106,9 +112,11 @@ export function LogIn() {
                     )}
                   </Button>
                 </div>
-                {/* {errors.password && (
-                  <p className="text-sm text-destructive">{errors.password}</p>
-                )} */}
+                <ErrorMessage
+                  name="password"
+                  component="p"
+                  className="text-red-500  mt-3"
+                />
               </div>
 
               <ButtonRegister type="submit" className="w-full mt-10 h-16">

@@ -8,16 +8,47 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { auth } from "@/utils/firebase";
+import { startListeningForFavorites } from "../favorites/operation";
+import {
+  removeUnsubscribeFunction,
+  setUnsubscribeFunction,
+} from "../favorites/slice";
 
-interface User {
+// Локальні типи для state
+interface FavoritesState {
+  unsubscribe: (() => void) | null;
+}
+
+interface AuthUser {
   name: string;
   email: string;
-  token: string;
+  userId: string;
+  token?: string;
+}
+
+interface AuthState {
+  user: AuthUser;
+  isLoggedIn: boolean;
+  isRefreshing?: boolean;
+  token?: string | null;
+}
+
+interface RootStateForThunk {
+  favorites: FavoritesState;
+  auth: AuthState;
+}
+
+// ===== REGISTER =====
+interface RegisterPayload {
+  name: string;
+  email: string;
+  password: string;
+  token?: string;
 }
 
 export const registerUser = createAsyncThunk<
-  User,
-  { name: string; email: string; token?: string; password: string }, // що приймає
+  AuthUser,
+  RegisterPayload,
   { rejectValue: string }
 >("auth/register", async (userData, thunkAPI) => {
   try {
@@ -26,6 +57,7 @@ export const registerUser = createAsyncThunk<
       userData.email,
       userData.password
     );
+    const userId = userCredential.user.uid;
 
     await updateProfile(userCredential.user, {
       displayName: userData.name,
@@ -35,27 +67,25 @@ export const registerUser = createAsyncThunk<
       name: userCredential.user.displayName || "",
       email: userCredential.user.email || "",
       token: await userCredential.user.getIdToken(),
+      userId,
     };
   } catch (err: unknown) {
     let errorMessage = "Помилка реєстрації";
-    if (err instanceof Error) {
-      errorMessage = err.message;
-    }
+    if (err instanceof Error) errorMessage = err.message;
     return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
-interface LoginUser {
-  name: string;
+// ===== LOGIN =====
+interface LoginPayload {
   email: string;
   password: string;
-  token: string;
 }
 
 export const logInUser = createAsyncThunk<
-  LoginUser,
-  { email: string; password: string },
-  { rejectValue: string }
+  AuthUser & { password: string },
+  LoginPayload,
+  { rejectValue: string; state: RootStateForThunk }
 >("auth/login", async (userData, thunkAPI) => {
   try {
     const userCredential = await signInWithEmailAndPassword(
@@ -63,6 +93,14 @@ export const logInUser = createAsyncThunk<
       userData.email,
       userData.password
     );
+    const userId = userCredential.user.uid;
+
+    // Запуск слухача favorites
+    const unsubscribe = await thunkAPI
+      .dispatch(startListeningForFavorites({ userId }))
+      .unwrap();
+    thunkAPI.dispatch(setUnsubscribeFunction(unsubscribe));
+
     const token = await userCredential.user.getIdToken();
 
     return {
@@ -70,35 +108,39 @@ export const logInUser = createAsyncThunk<
       email: userCredential.user.email || "",
       password: userData.password,
       token,
+      userId,
     };
   } catch (err: unknown) {
     let errorMessage = "Помилка логінізації";
-    if (err instanceof Error) {
-      errorMessage = err.message;
-    }
+    if (err instanceof Error) errorMessage = err.message;
     return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
-export const logOutUser = createAsyncThunk(
-  "auth/logout",
-  async (_, thunkAPI) => {
-    try {
-      await signOut(auth);
+// ===== LOGOUT =====
+export const logOutUser = createAsyncThunk<
+  void,
+  void,
+  { rejectValue: string; state: RootStateForThunk }
+>("auth/logout", async (_, thunkAPI) => {
+  try {
+    const unsubscribe = thunkAPI.getState().favorites.unsubscribe;
 
-      return null;
-    } catch (err: unknown) {
-      let errorMessage = "Помилка логінізації";
-      if (err instanceof Error) {
-        errorMessage = err.message;
-      }
-      return thunkAPI.rejectWithValue(errorMessage);
+    if (unsubscribe) {
+      unsubscribe();
+      thunkAPI.dispatch(removeUnsubscribeFunction());
     }
+    await signOut(auth);
+  } catch (err: unknown) {
+    let errorMessage = "Помилка виходу";
+    if (err instanceof Error) errorMessage = err.message;
+    return thunkAPI.rejectWithValue(errorMessage);
   }
-);
+});
 
+// ===== REFRESH =====
 interface RefreshedUser {
-  uid: string;
+  userId: string;
   email: string | null;
   name: string | null;
   displayName: string | null;
@@ -107,43 +149,45 @@ interface RefreshedUser {
 export const refreshUser = createAsyncThunk<
   RefreshedUser,
   void,
-  { rejectValue: string }
+  { rejectValue: string; state: RootStateForThunk }
 >(
   "auth/refresh",
   async (_, thunkAPI) => {
-    try {
+    return await new Promise<RefreshedUser>((resolve, reject) => {
       const authInstance = getAuth();
 
-      return await new Promise<RefreshedUser>((resolve, reject) => {
-        const unsubscribe = onAuthStateChanged(authInstance, (user) => {
-          if (user) {
-            unsubscribe();
-            resolve({
-              uid: user.uid,
-              email: user.email,
-              name: user.displayName,
-              displayName: user.displayName,
-            });
-          } else {
-            unsubscribe();
-            reject("Користувач не авторизований.");
+      const unsubscribeAuth = onAuthStateChanged(authInstance, async (user) => {
+        unsubscribeAuth();
+
+        if (user) {
+          const userId = user.uid;
+
+          try {
+            const unsubscribeFavorites = await thunkAPI
+              .dispatch(startListeningForFavorites({ userId }))
+              .unwrap();
+
+            thunkAPI.dispatch(setUnsubscribeFunction(unsubscribeFavorites));
+          } catch (error) {
+            console.error("Помилка при запуску слухача favorites:", error);
           }
-        });
+
+          resolve({
+            userId: user.uid,
+            email: user.email,
+            name: user.displayName,
+            displayName: user.displayName,
+          });
+        } else {
+          reject("Користувач не авторизований.");
+        }
       });
-    } catch (err: unknown) {
-      let errorMessage = "Помилка логінізації";
-      if (err instanceof Error) {
-        errorMessage = err.message;
-      }
-      return thunkAPI.rejectWithValue(errorMessage);
-    }
+    });
   },
   {
     condition: (_, thunkAPI) => {
-      const reduxState = thunkAPI.getState() as {
-        auth: { token: string | null };
-      };
-      return reduxState.auth.token !== null;
+      const authState = thunkAPI.getState().auth;
+      return authState.token != null;
     },
   }
 );

@@ -1,4 +1,4 @@
-import { Field, Form, Formik, type FormikHelpers } from "formik";
+import { ErrorMessage, Field, Form, Formik, type FormikHelpers } from "formik";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { ButtonRegister } from "../ui/buttonRegister";
 import { useDispatch } from "react-redux";
 import { registerUser } from "@/redux/auth/operation";
 import type { AppDispatch } from "@/redux/store";
+import * as Yup from "yup";
 
 type RegistrationFormValues = {
   name: string;
@@ -23,6 +24,20 @@ type RegistrationFormValues = {
   password: string;
   confirmPassword: string;
 };
+
+const ValidationSchema = Yup.object().shape({
+  name: Yup.string()
+    .min(3, "Short name")
+    .max(20, "Very long name")
+    .required("Enter name"),
+  email: Yup.string().email().required("Enter email"),
+  password: Yup.string()
+    .min(8, "Password is too short - should be 8 chars minimum.")
+    .required("Please provide a valid password"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password")], "Passwords must match")
+    .required("Please provide a valid password"),
+});
 
 export function Registration() {
   const dispatch = useDispatch<AppDispatch>();
@@ -69,6 +84,7 @@ export function Registration() {
           className="block
         ">
           <Formik
+            validationSchema={ValidationSchema}
             initialValues={{
               name: "",
               email: "",
@@ -87,7 +103,11 @@ export function Registration() {
                     className={`pl-4 h-[54px] w-full `}
                   />
                 </div>
-                {/* error */}
+                <ErrorMessage
+                  name="name"
+                  component="p"
+                  className="text-red-500  mt-3"
+                />{" "}
               </div>
 
               <div className="space-y-2">
@@ -100,9 +120,11 @@ export function Registration() {
                     className={`pl-4 h-[54px] w-full `}
                   />
                 </div>
-                {/* {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email}</p>
-                )} */}
+                <ErrorMessage
+                  name="email"
+                  component="p"
+                  className="text-red-500  mt-3"
+                />
               </div>
 
               <div className="space-y-2">
@@ -129,9 +151,11 @@ export function Registration() {
                     )}
                   </Button>
                 </div>
-                {/* {errors.password && (
-                  <p className="text-sm text-destructive">{errors.password}</p>
-                )} */}
+                <ErrorMessage
+                  name="password"
+                  component="p"
+                  className="text-red-500  mt-3"
+                />
               </div>
 
               <div className="space-y-2">
@@ -160,11 +184,11 @@ export function Registration() {
                     )}
                   </Button>
                 </div>
-                {/* {errors.confirmPassword && (
-                  <p className="text-sm text-destructive">
-                    {errors.confirmPassword}
-                  </p>
-                )} */}
+                <ErrorMessage
+                  name="confirmPassword"
+                  component="p"
+                  className="text-red-500  mt-3"
+                />
               </div>
 
               <ButtonRegister

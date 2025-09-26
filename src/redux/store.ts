@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./auth/slice";
 import teacherReducer from "./teacher/slice";
 import filterSlice from "./filtration/slice";
+import favoritesSlice from "./favorites/slice";
 
 import {
   persistStore,
@@ -29,11 +30,23 @@ export const store = configureStore({
     teachers: teacherReducer,
     auth: persisteAuthReducer,
     filters: filterSlice,
+    favorites: favoritesSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+        ignoredPaths: ["favorites.unsubscribe"],
+
+        ignoredActions: [
+          FLUSH,
+          REHYDRATE,
+          PAUSE,
+          PERSIST,
+          PURGE,
+          REGISTER,
+          "favorites/startListening/fulfilled",
+          "favorites/setUnsubscribeFunction",
+        ],
       },
     }),
 });

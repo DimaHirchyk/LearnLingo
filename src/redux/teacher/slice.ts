@@ -28,7 +28,7 @@ interface TeacherState {
   filteredTeachers: Teachers[];
   loading: boolean;
   error: boolean;
-  page: number;
+  displayLimit: number;
   currentFilters: {
     languages?: string;
     levels?: string;
@@ -36,10 +36,7 @@ interface TeacherState {
   };
 }
 
-interface GetTeachersPayload {
-  data: Teachers[];
-  page: number;
-}
+const LIMIT = 4;
 
 const teacherSlice = createSlice({
   name: "teachers",
@@ -48,9 +45,10 @@ const teacherSlice = createSlice({
     filteredTeachers: [],
     loading: false,
     error: false,
-    page: 1,
+    displayLimit: LIMIT,
     currentFilters: {},
   } as TeacherState,
+
   reducers: {
     filterTeachers(
       state,
@@ -61,6 +59,8 @@ const teacherSlice = createSlice({
       }>
     ) {
       state.currentFilters = action.payload;
+      state.displayLimit = LIMIT;
+
       state.filteredTeachers = state.teacher.filter((teacher) => {
         const languagesMatch = action.payload.languages
           ? teacher.languages.includes(action.payload.languages)
@@ -79,8 +79,12 @@ const teacherSlice = createSlice({
     resetTeachers(state) {
       state.teacher = [];
       state.filteredTeachers = [];
-      state.page = 1;
+      state.displayLimit = LIMIT;
       state.currentFilters = {};
+    },
+
+    loadMore(state) {
+      state.displayLimit += LIMIT;
     },
   },
   extraReducers: (builder) => {
@@ -91,14 +95,15 @@ const teacherSlice = createSlice({
       })
       .addCase(
         getTeachers.fulfilled,
-        (state, action: { payload: GetTeachersPayload }) => {
+        (state, action: { payload: Teachers[] }) => {
           state.loading = false;
-          if (!action.payload.page || action.payload.page === 1) {
-            state.teacher = action.payload.data;
-          } else {
-            state.teacher.push(...action.payload.data);
-          }
-          state.page = action.payload.page;
+
+          const existingTeacherIds = new Set(state.teacher.map((t) => t.id));
+          const uniqueNewTeachers = action.payload.filter(
+            (newTeacher) => !existingTeacherIds.has(newTeacher.id)
+          );
+
+          state.teacher.push(...uniqueNewTeachers);
 
           // застосування активних фільтрів
           const { languages, levels, price_per_hour } = state.currentFilters;
@@ -113,6 +118,8 @@ const teacherSlice = createSlice({
                 : true;
             return languagesMatch && levelsMatch && priceMatch;
           });
+
+          state.displayLimit = LIMIT;
         }
       )
 
@@ -123,5 +130,5 @@ const teacherSlice = createSlice({
   },
 });
 
-export const { resetTeachers, filterTeachers } = teacherSlice.actions;
+export const { resetTeachers, filterTeachers, loadMore } = teacherSlice.actions;
 export default teacherSlice.reducer;

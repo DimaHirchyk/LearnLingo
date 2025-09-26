@@ -12,6 +12,7 @@ import type { AppDispatch } from "./redux/store";
 import { selectIsRefreshing } from "./redux/auth/selector";
 import RestrictedRoute from "./components/restrictedRoute";
 import Favorites from "./components/page/favorites";
+import { getTeachers } from "./redux/teacher/operation";
 
 const Home = lazy(() => import("./components/page/home"));
 const TeacherCard = lazy(() => import("./components/page/teachers"));
@@ -22,6 +23,7 @@ function App() {
 
   useEffect(() => {
     dispatsh(refreshUser());
+    dispatsh(getTeachers());
   }, [dispatsh]);
   return isRefresh ? (
     <h1>Loading</h1>
