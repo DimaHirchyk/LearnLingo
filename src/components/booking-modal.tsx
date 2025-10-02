@@ -66,6 +66,8 @@ export function BookingModal({ isOpen, onClose, teacher }: BookingModalProps) {
     action: FormikHelpers<FormValues>
   ) => {
     try {
+      console.log(value);
+
       setResultModal("success");
       action.resetForm();
       onClose();
