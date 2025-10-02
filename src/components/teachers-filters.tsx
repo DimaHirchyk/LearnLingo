@@ -44,7 +44,7 @@ export function TeachersFilters() {
               setFilters((prev) => ({ ...prev, languages: value }))
             }>
             <SelectTrigger>
-              <SelectValue placeholder="Оберіть мову" />
+              <SelectValue placeholder="Select a language" />
             </SelectTrigger>
             <SelectContent>
               {option.languages.map((lang) => (
@@ -66,7 +66,7 @@ export function TeachersFilters() {
               setFilters((prev) => ({ ...prev, levels: value }))
             }>
             <SelectTrigger>
-              <SelectValue placeholder="Оберіть рівень" />
+              <SelectValue placeholder="Select a level" />
             </SelectTrigger>
             <SelectContent>
               {option.levels.map((level) => (
@@ -95,7 +95,7 @@ export function TeachersFilters() {
               }))
             }>
             <SelectTrigger>
-              <SelectValue placeholder="Оберіть ціну" />
+              <SelectValue placeholder="Choose a price" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="10">До $10</SelectItem>

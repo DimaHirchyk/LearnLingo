@@ -50,15 +50,19 @@ export function TeacherCardItem({ teacher, onClick }: TeacherCardItemProps) {
     <Card className="p-6 bg-white w-[1080px] " key={teacher.id}>
       {" "}
       {/* Avatar and basic info */}
-      <div className="relative w-[120px] mr-12">
-        <Avatar className="h-24 w-24">
-          <AvatarImage src={teacher.avatar_url} alt={teacher.name} />
+      <div className="relative p-1.5 w-[120px] h-full mr-12 rounded-full border-yellow-200 border-3">
+        <Avatar className="w-full h-[90px]">
+          <AvatarImage
+            src={teacher.avatar_url}
+            alt={teacher.name}
+            className="object-fill"
+          />
           <AvatarFallback>
             {teacher.name[0]}
             {teacher.surname[0]}
           </AvatarFallback>
         </Avatar>
-        <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white bg-green-500" />
+        <div className="absolute top-4 right-4 w-3 h-3 rounded-full border-2 border-white bg-green-500" />
       </div>
       <CardContent className="p-0 flex flex-col gap-12 w-full">
         {" "}
